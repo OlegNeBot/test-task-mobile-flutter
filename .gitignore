@@ -51,3 +51,6 @@ app.*.map.json
 /windows
 /linux
 /web
+
+# Removing pubspec.lock
+pubspec.lock
