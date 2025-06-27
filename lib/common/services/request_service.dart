@@ -1,4 +1,7 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
+import 'package:dio/io.dart';
 import 'package:test_task_mobile/common/services/data/request_method_enum.dart';
 import 'package:test_task_mobile/common/services/data/response_data.model.dart';
 
@@ -19,6 +22,12 @@ class RequestService {
   Object? _data;
   Object? get data => _data;
 
+  bool _shouldValidate = false;
+  bool get shpuldValidate => _shouldValidate;
+
+  bool _useHttps = false;
+  bool get useHttps => _useHttps;
+
   void setData(Object? data) {
     _data = data;
   }
@@ -38,14 +47,57 @@ class RequestService {
     _dio.options.headers.addAll(headers);
   }
 
-  // TODO(Oleg): Add validation control to https requests.
+  /// Toggles whether to validate certificate.
+  void toggleValidation() {
+    _shouldValidate = !_shouldValidate;
+
+    _updateCertificateValidation();
+  }
+
+  /// Updates the certificate validation in dio.
+  /// This method replaces old [IOHttpClientAdapter] with an updated one.
+  void _updateCertificateValidation() {
+    _dio.httpClientAdapter.close();
+
+    _dio.httpClientAdapter = IOHttpClientAdapter(
+      createHttpClient: () {
+        final client = HttpClient();
+
+        // Set the callback when a certificate cannot be authenticated.
+        client.badCertificateCallback = (cert, host, port) {
+          if (!_shouldValidate) {
+            return true;
+          }
+
+          // Some code to make decision about bad certificate...
+          // This return should be replaced with the decision.
+          return true;
+        };
+
+        return client;
+      },
+      // Certificate validation.
+      validateCertificate: (cert, host, port) {
+        if (!_shouldValidate) {
+          return true;
+        }
+
+        // Some code to validate certificate.
+        // This return should be replaced with the validation.
+        return true;
+      },
+    );
+  }
+
+  /// Toggles whether to use http/https.
+  void toggleHttps() {
+    _useHttps = !_useHttps;
+  }
 
   Future<ResponseDataModel> performRequest() async {
-    final response = await _dio.request<String>(url, data: data);
+    final uri = Uri(scheme: _useHttps ? 'https' : 'http', path: _url);
 
-    if (response.data == null) {
-      // TODO(Oleg): Add reaction.
-    }
+    final response = await _dio.request<String>(uri.toString(), data: data);
 
     return ResponseDataModel.fromJson(response.data!);
   }
