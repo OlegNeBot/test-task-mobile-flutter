@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:test_task_mobile/common/services/data/request_method_enum.dart';
+import 'package:test_task_mobile/common/services/data/request_service_exception.model.dart';
 import 'package:test_task_mobile/common/services/data/response_data.model.dart';
 import 'package:test_task_mobile/common/services/request_service.dart';
 import 'package:test_task_mobile/features/request/widgets/collapsable_text_field.dart';
@@ -27,16 +28,42 @@ class _RequestPageState extends State<RequestPage> {
   }
 
   Future<void> _performRequest() async {
-    // TODO(Oleg): Add validation to check when required fields are filled.
+    if (_textController.text.isEmpty) {
+      return;
+    }
 
     _requestService.setUrl(_textController.text);
 
-    // TODO(Oleg): Add try/catch.
-    final response = await _requestService.performRequest();
+    try {
+      // Fake result.
+      setState(() {
+        _response = ResponseDataModel.fake();
+      });
 
-    setState(() {
-      _response = response;
-    });
+      // Fake with bad connection.
+      /*setState(() {
+        _response = ResponseDataModel.connectionError();
+      });*/
+
+      // Fake with bad certificate.
+      /*setState(() {
+        _response = ResponseDataModel.certificateError();
+      });*/
+
+      // Fake with invalidData.
+      /*setState(() {
+        _response = ResponseDataModel.invalidResponseError();
+      });*/
+
+      // Real execution.
+      /* final response = await _requestService.performRequest();
+
+      setState(() {
+        _response = response;
+      });*/
+    } on RequestServiceException catch (e) {
+      // TODO(Oleg): Add something to show in UI.
+    }
   }
 
   /// Parses headers string into Map and sets in [_requestService].
