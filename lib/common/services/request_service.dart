@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:dio/dio.dart';
 import 'package:dio/io.dart';
 import 'package:test_task_mobile/common/services/data/request_method_enum.dart';
+import 'package:test_task_mobile/common/services/data/request_service_exception.model.dart';
 import 'package:test_task_mobile/common/services/data/response_data.model.dart';
 
 class RequestService {
@@ -69,9 +70,8 @@ class RequestService {
             return true;
           }
 
-          // Some code to make decision about bad certificate...
-          // This return should be replaced with the decision.
-          return true;
+          // This exception can be replaced with other handling.
+          throw RequestServiceCertificateException();
         };
 
         return client;
@@ -82,9 +82,8 @@ class RequestService {
           return true;
         }
 
-        // Some code to validate certificate.
-        // This return should be replaced with the validation.
-        return true;
+        // This exception can be replaced with other handling.
+        throw RequestServiceCertificateException();
       },
     );
   }
@@ -94,11 +93,25 @@ class RequestService {
     _useHttps = !_useHttps;
   }
 
-  Future<ResponseDataModel> performRequest() async {
+  Future<ResponseDataModel?> performRequest() async {
     final uri = Uri(scheme: _useHttps ? 'https' : 'http', path: _url);
 
-    final response = await _dio.request<String>(uri.toString(), data: data);
+    try {
+      final response = await _dio.request<String>(uri.toString(), data: data);
 
-    return ResponseDataModel.fromJson(response.data!);
+      return ResponseDataModel.fromJson(response.data!);
+    } on DioException catch (e) {
+      // Handling connection errors.
+      if (e.type == DioExceptionType.connectionError ||
+          e.type == DioExceptionType.connectionTimeout ||
+          e.type == DioExceptionType.receiveTimeout ||
+          e.type == DioExceptionType.sendTimeout) {
+        throw RequestServiceConnectionException();
+      }
+    } catch (_) {
+      rethrow;
+    }
+
+    return Future.value();
   }
 }
