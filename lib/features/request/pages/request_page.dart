@@ -27,10 +27,14 @@ class _RequestPageState extends State<RequestPage> {
     _textController = TextEditingController(text: _requestService.url);
   }
 
-  Future<void> _performRequest() async {
+  Future<void> _performRequest(BuildContext context) async {
     if (_textController.text.isEmpty) {
       return;
     }
+
+    setState(() {
+      _response = null;
+    });
 
     _requestService.setUrl(_textController.text);
 
@@ -62,7 +66,12 @@ class _RequestPageState extends State<RequestPage> {
         _response = response;
       });*/
     } on RequestServiceException catch (e) {
-      // TODO(Oleg): Add something to show in UI.
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(e.message ?? 'Unknown error'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -89,30 +98,39 @@ class _RequestPageState extends State<RequestPage> {
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
       actions: [
-        IconButton(
-          onPressed: () async => _performRequest(),
-          icon: Icon(Icons.play_arrow),
+        // Builder is used here to get Scaffold in the context below.
+        Builder(
+          builder:
+              (context) => IconButton(
+                onPressed: () async => _performRequest(context),
+                icon: Icon(Icons.play_arrow),
+              ),
         ),
       ],
     ),
     body: ListView(
+      padding: const EdgeInsets.all(10),
       children: [
-        Padding(
-          padding: const EdgeInsets.all(10),
-          child: TextField(controller: _textController),
-        ),
+        TextField(controller: _textController),
         TitledSwitch(
           title: 'Защищенное соединение',
           value: _requestService.useHttps,
-          onChanged: (_) => _requestService.toggleHttps(),
+          onChanged:
+              (_) => setState(() {
+                _requestService.toggleHttps();
+              }),
         ),
         TitledSwitch(
           title: 'Валидация соединения',
           value: _requestService.shouldValidate,
           enabled: _requestService.useHttps,
-          onChanged: (_) => _requestService.toggleValidation(),
+          onChanged:
+              (_) => setState(() {
+                _requestService.toggleValidation();
+              }),
         ),
         DropdownButton(
+          isExpanded: true,
           items:
               RequestMethod.values
                   .map<DropdownMenuItem<RequestMethod>>(
@@ -122,7 +140,10 @@ class _RequestPageState extends State<RequestPage> {
                     ),
                   )
                   .toList(),
-          onChanged: (value) => _requestService.setMethod(value!),
+          onChanged:
+              (value) => setState(() {
+                _requestService.setMethod(value!);
+              }),
           value: _requestService.method,
         ),
         CollapsableTextField(title: 'Headers', onChanged: _setHeaders),
