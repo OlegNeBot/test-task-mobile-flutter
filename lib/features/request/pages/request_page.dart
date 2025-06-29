@@ -4,6 +4,7 @@ import 'package:test_task_mobile/common/services/data/request_service_exception.
 import 'package:test_task_mobile/common/services/data/response_data.model.dart';
 import 'package:test_task_mobile/common/services/request_service.dart';
 import 'package:test_task_mobile/features/request/widgets/collapsable_text_field.dart';
+import 'package:test_task_mobile/features/request/widgets/loader_dialog.dart';
 import 'package:test_task_mobile/features/request/widgets/titled_switch.dart';
 
 class RequestPage extends StatefulWidget {
@@ -32,6 +33,8 @@ class _RequestPageState extends State<RequestPage> {
       return;
     }
 
+    showLoaderDialog(context);
+
     setState(() {
       _response = null;
     });
@@ -39,6 +42,10 @@ class _RequestPageState extends State<RequestPage> {
     _requestService.setUrl(_textController.text);
 
     try {
+      // Immitating the real request delay.
+      // Should be removed in a real call.
+      await Future.delayed(const Duration(milliseconds: 1500));
+
       // Fake result.
       setState(() {
         _response = ResponseDataModel.fake();
@@ -66,12 +73,19 @@ class _RequestPageState extends State<RequestPage> {
         _response = response;
       });*/
     } on RequestServiceException catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(e.message ?? 'Unknown error'),
-          backgroundColor: Colors.red,
-        ),
-      );
+      if (context.mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(e.message ?? 'Unknown error'),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } finally {
+      // Closing the loader modal.
+      if (context.mounted) {
+        Navigator.of(context).pop();
+      }
     }
   }
 
