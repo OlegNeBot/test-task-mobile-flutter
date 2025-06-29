@@ -6,6 +6,7 @@ import 'package:test_task_mobile/common/services/request_service.dart';
 import 'package:test_task_mobile/features/request/widgets/collapsable_text_field.dart';
 import 'package:test_task_mobile/features/request/widgets/loader_dialog.dart';
 import 'package:test_task_mobile/features/request/widgets/titled_switch.dart';
+import 'package:test_task_mobile/common/utils/extensions.dart';
 
 class RequestPage extends StatefulWidget {
   const RequestPage({super.key});
@@ -111,13 +112,17 @@ class _RequestPageState extends State<RequestPage> {
   @override
   Widget build(BuildContext context) => Scaffold(
     appBar: AppBar(
+      backgroundColor: context.colorScheme.primary,
       actions: [
         // Builder is used here to get Scaffold in the context below.
         Builder(
           builder:
               (context) => IconButton(
                 onPressed: () async => _performRequest(context),
-                icon: Icon(Icons.play_arrow),
+                icon: Icon(
+                  Icons.play_arrow,
+                  color: context.colorScheme.onPrimary,
+                ),
               ),
         ),
       ],
@@ -181,11 +186,24 @@ class _ResponseInfo extends StatelessWidget {
       response == null
           ? SizedBox.shrink()
           : Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Response info:'),
-              Text('Status: ${response!.status}'),
-              Text('Message: ${response!.message}'),
-              Text('Data: ${response!.data}'),
+              Text('Response info:', style: context.textTheme.headlineSmall),
+
+              const SizedBox(height: 20),
+
+              Text(
+                'Status: ${response!.status}',
+                style: context.textTheme.bodyLarge,
+              ),
+              Text(
+                'Message: ${response!.message}',
+                style: context.textTheme.bodyLarge,
+              ),
+              Text(
+                'Data: ${response!.data}',
+                style: context.textTheme.bodyLarge,
+              ),
             ],
           );
 }

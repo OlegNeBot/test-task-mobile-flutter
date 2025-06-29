@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_task_mobile/common/utils/extensions.dart';
 
 class TitledSwitch extends StatelessWidget {
   const TitledSwitch({
@@ -20,7 +21,7 @@ class TitledSwitch extends StatelessWidget {
     child: Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(title),
+        Text(title, style: context.textTheme.bodyLarge),
         Switch(value: value, onChanged: enabled ? onChanged : null),
       ],
     ),

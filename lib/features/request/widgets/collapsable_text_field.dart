@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:test_task_mobile/common/utils/extensions.dart';
 
 class CollapsableTextField extends StatelessWidget {
   const CollapsableTextField({
@@ -12,7 +13,7 @@ class CollapsableTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => ExpansionTile(
-    title: Text(title),
+    title: Text(title, style: context.textTheme.titleMedium),
     children: [TextField(maxLines: null, onChanged: onChanged)],
   );
 }
