@@ -24,18 +24,21 @@ class RequestService {
   Object? get data => _data;
 
   bool _shouldValidate = false;
-  bool get shpuldValidate => _shouldValidate;
+  bool get shouldValidate => _shouldValidate;
 
   bool _useHttps = false;
   bool get useHttps => _useHttps;
 
-  void setData(Object? data) {
-    _data = data;
-  }
+  RequestMethod _method = RequestMethod.get;
+  RequestMethod get method => _method;
 
   /// Sets request method.
   void setMethod(RequestMethod method) {
-    _dio.options.method = method.name.toUpperCase();
+    _method = method;
+  }
+
+  void setData(Object? data) {
+    _data = data;
   }
 
   /// Replaces old headers with the new ones.
@@ -91,10 +94,16 @@ class RequestService {
   /// Toggles whether to use http/https.
   void toggleHttps() {
     _useHttps = !_useHttps;
+
+    // Turning off validation when https is off.
+    if (!_useHttps) {
+      _shouldValidate = false;
+    }
   }
 
   Future<ResponseDataModel?> performRequest() async {
     final uri = Uri(scheme: _useHttps ? 'https' : 'http', path: _url);
+    _dio.options.method = method.name.toUpperCase();
 
     try {
       final response = await _dio.request<String>(uri.toString(), data: data);
